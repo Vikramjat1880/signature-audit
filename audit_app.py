@@ -12,7 +12,6 @@ try:
 except ImportError:
     OCR_AVAILABLE = False
 
-# --- PAGE CONFIG & CORPORATE STYLING ---
 st.set_page_config(
     page_title="Signature ( by vickyy )",
     page_icon="🛡️",
@@ -58,7 +57,6 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- AUTHENTICATION SYSTEM ---
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
@@ -85,7 +83,6 @@ if not st.session_state.authenticated:
                     st.error("❌ Invalid ID or Password! Please try again.")
     st.stop()
 
-# --- TOP HEADER & LOGOUT ---
 h_col1, h_col2 = st.columns([5, 1])
 with h_col1:
     st.markdown("""
@@ -101,7 +98,6 @@ with h_col2:
         st.session_state.authenticated = False
         st.rerun()
 
-# --- HELPER FUNCTIONS ---
 def extract_utrs(text):
     if not text:
         return []
@@ -278,7 +274,6 @@ def parse_bank_statements(files):
                         
     return pd.DataFrame(all_txns) if all_txns else pd.DataFrame(columns=['Bank_Account', 'Date', 'UTR', 'Credit_Inflow', 'Debit_Outflow', 'Category', 'Narration'])
 
-# --- UPLOAD SECTION ---
 c1, c2, c3 = st.columns(3)
 
 with c1:
@@ -410,4 +405,61 @@ if st.button("🚀 RUN COMPLETE 3-WAY AUDIT", type="primary", use_container_widt
                     st.dataframe(s_dep, use_container_width=True)
                 if not s_wdl.empty:
                     st.dataframe(s_wdl, use_container_width=True)
-                if n
+                if not s_bnk.empty:
+                    st.dataframe(s_bnk, use_container_width=True)
+                if not s_grp.empty:
+                    st.dataframe(s_grp, use_container_width=True)
+
+            tabs = st.tabs([
+                "🚨 1. Deposit Fake / Missing Stmt",
+                "🚨 2. Withdrawal Fake / Mismatch",
+                "⚠️ 3. Extra Bank Credits (No Panel)",
+                "⚠️ 4. Extra Bank Debits (No Slip)",
+                "💵 5. Cash & 🏦 Charges",
+                "📋 6. Full Panel & Bank Ledgers"
+            ])
+            
+            with tabs[0]:
+                st.caption("Jo Panel Deposit me approve hain par kisi uploaded Bank/QR statement me nahi mile (ya amount mismatch/duplicate hai).")
+                st.dataframe(df_dep_mismatch, use_container_width=True)
+            with tabs[1]:
+                st.caption("Jo Panel Withdrawal me approve hain par Bank Debit ya WhatsApp Group 1 se match nahi hue.")
+                st.dataframe(df_wdl_mismatch, use_container_width=True)
+            with tabs[2]:
+                st.caption("Jo paisa Bank/QR me aaya hai par Panel Deposit PDF me nahi mila.")
+                st.dataframe(df_extra_bank_cr, use_container_width=True)
+            with tabs[3]:
+                st.caption("Jo paisa Bank se kata hai par Panel Withdrawal ya WhatsApp Groups se poora match nahi hua.")
+                st.dataframe(df_extra_bank_dr, use_container_width=True)
+            with tabs[4]:
+                st.markdown("**💵 Cash Withdrawals**")
+                st.dataframe(df_cash, use_container_width=True)
+                st.markdown("**🏦 Bank Charges & Taxes**")
+                st.dataframe(df_charges, use_container_width=True)
+            with tabs[5]:
+                st.markdown("**📥 Complete Panel Deposits (With Status)**")
+                st.dataframe(df_p_dep, use_container_width=True)
+                st.markdown("**📤 Complete Panel Withdrawals (With Status)**")
+                st.dataframe(df_p_wdl, use_container_width=True)
+                st.markdown("**🏦 Complete Bank & QR Ledger (With Status)**")
+                st.dataframe(df_bank, use_container_width=True)
+
+            output = io.BytesIO()
+            with pd.ExcelWriter(output, engine='openpyxl') as writer:
+                df_dep_mismatch.to_excel(writer, sheet_name='1_Deposit_Fake_Missing', index=False)
+                df_wdl_mismatch.to_excel(writer, sheet_name='2_Withdrawal_Fake_Mismatch', index=False)
+                df_extra_bank_cr.to_excel(writer, sheet_name='3_Extra_Bank_Credits', index=False)
+                df_extra_bank_dr.to_excel(writer, sheet_name='4_Extra_Bank_Debits', index=False)
+                df_cash.to_excel(writer, sheet_name='5_Cash_Withdrawals', index=False)
+                df_charges.to_excel(writer, sheet_name='6_Bank_Charges', index=False)
+                df_p_dep.to_excel(writer, sheet_name='7_All_Panel_Deposits', index=False)
+                df_p_wdl.to_excel(writer, sheet_name='8_All_Panel_Withdrawals', index=False)
+                df_bank.to_excel(writer, sheet_name='9_Complete_Bank_Ledger', index=False)
+            
+            st.download_button(
+                label="📥 DOWNLOAD COMPLETE 9-SHEET AUDIT REPORT (.XLSX)",
+                data=output.getvalue(),
+                file_name="Signature_By_Vickyy_Audit_Report.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                use_container_width=True
+            )
