@@ -406,6 +406,8 @@ if st.button("🚀 RUN COMPLETE 3-WAY AUDIT", type="primary", use_container_widt
                 s_grp = pd.concat([df_g1, df_g2])[pd.concat([df_g1, df_g2]).apply(lambda r: q in str(r.values).lower(), axis=1)] if (not df_g1.empty or not df_g2.empty) else pd.DataFrame()
                 
                 st.info(f"Search Results for '{search_q}': Panel Deposit ({len(s_dep)}) | Panel Withdrawal ({len(s_wdl)}) | Bank ({len(s_bnk)}) | WhatsApp ({len(s_grp)})")
-                if not s_dep.empty: st.dataframe(s_dep, use_container_width=True)
-                if not s_wdl.empty: st.dataframe(s_wdl, use_container_width=True)
-                if not s_bnk.empty: st.dataframe(s_bnk, use_
+                if not s_dep.empty:
+                    st.dataframe(s_dep, use_container_width=True)
+                if not s_wdl.empty:
+                    st.dataframe(s_wdl, use_container_width=True)
+                if n
